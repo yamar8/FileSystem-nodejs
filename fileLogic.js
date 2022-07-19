@@ -2,7 +2,7 @@ const fs = require('fs');
 const { nextTick } = require('process');
 
 function saveFile(file){
-    fs.writeFileSync('./upload' + file.originalname ,file.buffer);
+    fs.writeFileSync('./uploads/' + file.originalname ,file.buffer);
 }
 
 const createFile = (fileName)=>{
@@ -29,7 +29,6 @@ const deleteFile = (fileName)=>{
 
 function isExist(fileName){
     return fs.existsSync('./data/' + fileName);
-
 }
 
 function isValidName(fileName = ""){
