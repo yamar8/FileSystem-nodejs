@@ -1,4 +1,5 @@
 const fileLogic = require("./fileLogic");
+const {isValid} = require('./fileLogic')
 
 const express = require("express");
 const router = express.Router();
@@ -7,7 +8,7 @@ const multer = require('multer');
 const upload = multer();
 
 
-router.post('/upload',upload.single('fileName'),async (req,res)=>{
+router.post('/upload', upload.single('fileName'),async (req,res)=>{
     console.log(req.body);
     try{
         fileLogic.saveFile(req.file)
@@ -20,7 +21,7 @@ router.post('/upload',upload.single('fileName'),async (req,res)=>{
 
 router.get("/", async (req, res) => {
     try {
-      const data = await userLogic.readFile(req.body.fileName);
+      const data = await fileLogic.readFile(req.body.fileName);
       console.log(data);
       res.send(data);
     } catch (error) {
@@ -28,27 +29,32 @@ router.get("/", async (req, res) => {
     }
   });
   
-  router.post("/", async (req, res) => {
-    try {
-      await userLogic.createFile(req.body.fileName);
+  router.post("/",isValid,async (req, res) => {
+      try {
+          await fileLogic.createFile(req.body.fileName,req.body.value);
       res.send("file has been created");
-    } catch (error) {}
+    } catch (error) {
+        res.send(error.message);
+    }
   });
   
   router.put("/", async (req, res) => {
     try {
-      await userLogic.updateFile(req.body.fileName, req.body.value);
+      await fileLogic.updateFile(req.body.fileName, req.body.value);
       res.send("done");
-    } catch {}
+    } catch {
+        res.send(error.message);
+    }
   });
   
   router.delete("/", async (req, res) => {
     try {
-        await userLogic.deleteFile(req.body.fileName);
+        await fileLogic.deleteFile(req.body.fileName);
         res.send("file has been deleted");
     } catch(error) {
       res.send(error.message);
     }
   });
   
+
   module.exports = router;

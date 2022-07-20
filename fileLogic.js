@@ -1,48 +1,63 @@
-const fs = require('fs');
-const { nextTick } = require('process');
+const fs = require("fs");
+const { nextTick } = require("process");
 
-function saveFile(file){
-    fs.writeFileSync('./uploads/' + file.originalname ,file.buffer);
-}
-
-const createFile = (fileName)=>{
-    fs.writeFileSync(`data/${fileName}.txt`,"");
+function saveFile(file) {
+  fs.writeFileSync("./uploads/" + file.originalname, file.buffer);
 }
 
-const readFile = async (fileName) =>{
-    if(!fs.existsSync(`data/${fileName}.txt`)){
-        throw {message: "File dosn't exist"};
-    }
-        const text = await fs.readFileSync(`data/${fileName}.txt`, { encoding: "utf-8" });
-        return text;   
-}
-const updateFile = (fileName,value)=>{
-    fs.appendFileSync(`data/${fileName}.txt`, value)
+const createFile = (fileName, value) => {
+  if (isExist(fileName)) throw { message: "file is already exist" };
+  fs.writeFileSync(`uploads/${fileName}`, value);
+  console.log("-----------")
+};
+
+const readFile = async (fileName) => {
+  if (!isExist(fileName)) throw { message: "File dosen't exist" };
+  const data = await fs.readFileSync(`uploads/${fileName}`, {
+    encoding: "utf-8",
+  });
+  return data;
+};
+const updateFile = (fileName, value) => {
+  if (!isExist(fileName)) throw { message: "file dosen't exist" };
+  fs.appendFileSync(`uploads/${fileName}`, value);
+};
+
+const deleteFile = (fileName) => {
+  if (!isExist) throw { message: "File dosen't exist" };
+  fs.unlinkSync(`uploads/${fileName}`);
+};
+
+function isExist(fileName) {
+  return fs.existsSync(`./uploads/${fileName}`);
 }
 
-const deleteFile = (fileName)=>{
-    if(!fs.existsSync(`data/${fileName}.txt`)){
-        throw {message: "File dosn't exist"};
-    }
-    fs.unlinkSync(`data/${fileName}.txt`)
+function isValidName(fileName = "") {
+  return ["/", "\\", "+", ":", "|", "?", "<", ">", '"'].find((char) =>
+    fileName.includes(char)
+  )
+    ? false
+    : true;
 }
 
-function isExist(fileName){
-    return fs.existsSync('./data/' + fileName);
+function isValidExtantions(fileName = "") {
+  let ext = fileName.slice(fileName.lastIndexOf("."));
+  return [".pdf", ".txt", ".png", ".jpg", ".js", ".html", ".css", ".jsx", ".ts"].find(
+    (char) => ext == char
+  )
+    ? true
+    : false;
 }
 
-function isValidName(fileName = ""){
-    return ["/","\\","+",":","|","?","<",">",'"'].find(char => fileName.includes(char)) ? false : true;
+const isValid = (req, res, next) => {
+    const { fileName } = req.body;
+    if (isValidName(fileName) && isValidExtantions(fileName)) {
+    next();
+  }else{
+      res.send("file is not valid");
+  }
 }
 
-function isValidExtantions(fileName =""){
-    let ext = fileName.slice(fileName.lastIndexOf("."));
-    return ["pdf","txt","png","jpg","js","html","css","jsx","ts"].find(char=> ext == char) ? false :  true;
-}
-function isValid(req,res,next){
-    const {filename} = req.body;
-    if(isValidName(filename) && isValidExtantions(filename)) next();
-}
 // deleteFile("hello");
 
-module.exports = {readFile,createFile,deleteFile,updateFile,saveFile};
+module.exports = { readFile, createFile, deleteFile, updateFile, saveFile,isValid };
